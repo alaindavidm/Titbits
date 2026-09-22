@@ -1,0 +1,12 @@
+{
+  "name": "Titbits",
+  "short_name": "Titbits",
+  "description": "Financial discipline, finally visible.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f6f7f8",
+  "theme_color": "#103826",
+  "icons": [
+    { "src": "icons/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
