@@ -1,5 +1,6 @@
 import { t } from "../i18n.js";
-import { login, signup } from "../auth.js";
+import { login, signup, verifyEmailCode, resendVerificationCode, getCurrentUser } from "../auth.js";
+import { COUNTRIES } from "../countries.js";
 import { navigate } from "../router.js";
 
 export async function renderLogin(root) {
@@ -40,6 +41,19 @@ export async function renderSignup(root) {
         <h2>${t("auth.signup_title")}</h2>
         <div id="err"></div>
         <form id="signup-form">
+          <div class="grid-2">
+            <div><label>${t("auth.first_name")}</label><input type="text" name="firstName" required /></div>
+            <div><label>${t("auth.last_name")}</label><input type="text" name="lastName" required /></div>
+          </div>
+          <div class="grid-2">
+            <div><label>${t("auth.date_of_birth")}</label><input type="date" name="dob" required /></div>
+            <div><label>${t("auth.country")}</label>
+              <select name="country" required>
+                <option value="" disabled selected>${t("auth.select_country")}</option>
+                ${COUNTRIES.map((c) => `<option value="${c}">${c}</option>`).join("")}
+              </select>
+            </div>
+          </div>
           <label>${t("auth.email")}</label>
           <input type="email" name="email" required />
           <label>${t("auth.password")}</label>
@@ -65,11 +79,67 @@ export async function renderSignup(root) {
       return;
     }
     try {
-      await signup(fd.get("email"), password);
-      navigate("/onboarding");
+      await signup({
+        email: fd.get("email"),
+        password,
+        firstName: fd.get("firstName"),
+        lastName: fd.get("lastName"),
+        dateOfBirth: fd.get("dob"),
+        country: fd.get("country")
+      });
+      navigate("/verify-email");
     } catch (err) {
       const msg = err.message === "EMAIL_EXISTS" ? t("auth.error_exists") : t("auth.error_weak");
       errBox.innerHTML = `<div class="form-error">${msg}</div>`;
     }
   });
+}
+
+export async function renderVerifyEmail(root, user) {
+  function draw() {
+    const current = getCurrentUser() || user;
+    root.innerHTML = `
+      <div class="container-narrow">
+        <div class="card auth-card">
+          <h2>${t("auth.verify_title")}</h2>
+          <p>${t("auth.verify_body", { email: current.email })}</p>
+          <div class="notice-box" style="text-align:center;font-size:28px;font-weight:800;letter-spacing:0.3em">
+            ${current.email_verification_code || ""}
+          </div>
+          <div id="err"></div>
+          <form id="verify-form">
+            <label>${t("auth.verify_code_label")}</label>
+            <input type="text" name="code" inputmode="numeric" maxlength="6" required />
+            <button class="btn btn-primary btn-block" type="submit">${t("auth.verify_button")}</button>
+          </form>
+          <div class="form-actions" style="justify-content:space-between;margin-top:16px">
+            <button class="btn btn-ghost btn-sm" id="resend">${t("auth.resend_code")}</button>
+            <button class="btn btn-ghost btn-sm" id="skip">${t("auth.skip_verification")}</button>
+          </div>
+        </div>
+      </div>`;
+
+    root.querySelector("#verify-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const errBox = root.querySelector("#err");
+      try {
+        verifyEmailCode(current.id, fd.get("code"));
+        navigate("/onboarding");
+      } catch {
+        errBox.innerHTML = `<div class="form-error">${t("auth.error_code_invalid")}</div>`;
+      }
+    });
+
+    root.querySelector("#resend").addEventListener("click", () => {
+      resendVerificationCode(current.id);
+      draw();
+    });
+
+    root.querySelector("#skip").addEventListener("click", () => {
+      navigate("/onboarding");
+    });
+  }
+
+  draw();
 }

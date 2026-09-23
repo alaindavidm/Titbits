@@ -53,7 +53,8 @@ export const db = {
 
 export const ENTITIES = [
   "users", "incomeEntries", "expenseEntries", "emergencyFunds", "emergencyFundTransactions",
-  "investmentHoldings", "investmentContributions", "investmentProfiles", "alerts", "simulationRuns"
+  "investmentHoldings", "investmentContributions", "investmentProfiles", "alerts", "simulationRuns",
+  "budgetLines"
 ];
 
 export function exportUserData(userId) {
