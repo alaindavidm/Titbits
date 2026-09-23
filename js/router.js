@@ -29,11 +29,15 @@ export async function handleRoute() {
     return;
   }
   if ((path === "/login" || path === "/signup" || path === "/") && user) {
+    location.hash = user.onboarded ? "/dashboard" : user.email_verified ? "/onboarding" : "/verify-email";
+    return;
+  }
+  if (user && path === "/verify-email" && user.email_verified) {
     location.hash = user.onboarded ? "/dashboard" : "/onboarding";
     return;
   }
-  if (user && !user.onboarded && route.protected && path !== "/onboarding") {
-    location.hash = "/onboarding";
+  if (user && !user.onboarded && route.protected && path !== "/onboarding" && path !== "/verify-email") {
+    location.hash = user.email_verified ? "/onboarding" : "/verify-email";
     return;
   }
 

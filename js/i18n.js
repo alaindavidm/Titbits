@@ -2,7 +2,7 @@ const STRINGS = {
   en: {
     app_name: "Titbits",
     tagline: "See it all. Build the habit. Reach your freedom.",
-    nav: { dashboard: "Dashboard", add_entry: "Add Entry", emergency_fund: "Emergency Fund", investments: "Investments",
+    nav: { dashboard: "Dashboard", add_entry: "Add Entry", transactions: "Transactions", budget: "Budget", emergency_fund: "Emergency Fund", investments: "Investments",
       simulation: "Simulation", profile_tool: "Investment Profile", sentiment: "Market Sentiment", alerts: "Alerts",
       settings: "Settings", bank_connect: "Connect Accounts", logout: "Log out", login: "Log in", signup: "Sign up" },
     landing: {
@@ -23,7 +23,13 @@ const STRINGS = {
       create_one: "Create an account", log_in_link: "Log in",
       error_mismatch: "Passwords don't match.", error_exists: "An account with that email already exists.",
       error_invalid: "Incorrect email or password.", error_weak: "Use at least 6 characters.",
-      demo_note: "This runs entirely in your browser — please don't reuse a real password you use elsewhere."
+      demo_note: "This runs entirely in your browser — please don't reuse a real password you use elsewhere.",
+      first_name: "First name", last_name: "Last name", date_of_birth: "Date of birth", country: "Country",
+      select_country: "Select your country",
+      verify_title: "Verify your email", verify_body: "This demo has no real email server, so we can't send you an actual email. Here's the code that would have been sent to {email}:",
+      verify_code_label: "Enter the 6-digit code", verify_button: "Verify email", skip_verification: "Skip for now",
+      resend_code: "Resend code", code_resent: "New code generated below.",
+      error_code_invalid: "That code doesn't match. Try again.", verified_success: "Email verified!"
     },
     onboarding: {
       title: "Let's set up your picture", step: "Step",
@@ -45,7 +51,27 @@ const STRINGS = {
       ef_progress: "of 6-month target", invest_progress: "of 15% monthly target",
       quick_add: "Add expense", quick_add_income: "Add income",
       empty_title: "No data yet", empty_body: "Log your first income or expense to see your picture come together.",
-      view_all_alerts: "View all alerts"
+      view_all_alerts: "View all alerts",
+      add_extra_income: "Add extra income", extra_income_modal_title: "Add extra income",
+      choose_bucket: "Where should this go? Split across categories however you like.",
+      alloc_needs: "Needs", alloc_wants: "Wants", alloc_savings: "Savings", alloc_investment: "Investment",
+      total_must_equal_100: "Percentages must add up to 100%.", save_allocation: "Add income",
+      cycle_label: "Reset cycle", cycle_help: "Needs/Wants/Savings and your investment tracker automatically reset at the start of each new cycle.",
+      cycle_option: "Every {days} days"
+    },
+    budget: {
+      title: "Budget Planner", subtitle: "Build a full budget line by line, then compare it against what actually happened.",
+      group_needs: "Needs", group_wants: "Wants", group_savings: "Savings", group_investments: "Investments", group_debts: "Debts",
+      planned: "Planned", actual: "Actual", difference: "Difference", total: "Total",
+      add_custom: "+ Add line", custom_line_prompt: "Name this budget line", remove: "Remove",
+      save: "Save budget", saved: "Budget saved.",
+      vs_reality_title: "Budget vs. Reality (this cycle)", no_lines: "No lines in this section yet.",
+      advice_title: "Financial advice", advice_group_over: "You're at {pct}% of your {group} budget for this cycle — worth a closer look.",
+      advice_line_over: "{label} is ${over} over budget this cycle.", advice_line_under: "{label} is ${under} under budget — nicely controlled.",
+      advice_no_investment: "You planned an investment budget but haven't logged any investment contributions this cycle yet.",
+      advice_high_debt: "Debt payments make up a large share of your spending this cycle — consider prioritizing extra payments toward your highest-interest debt.",
+      advice_on_track: "Overall you're at or under your total planned budget for this cycle — keep it up.",
+      advice_none: "Set planned amounts on a few lines to start getting personalized advice."
     },
     entry: {
       title: "Add Entry", type: "Type", income: "Income", expense: "Expense",
@@ -54,11 +80,15 @@ const STRINGS = {
       save: "Save entry", saved: "Saved!", pick_category: "Choose a category",
       cat_needs: "Needs", cat_wants: "Wants", cat_savings: "Savings / Debt",
       categories: {
-        rent: "Rent / Mortgage", utilities: "Utilities", groceries: "Groceries", transportation: "Transportation",
+        rent: "Rent / Mortgage", utilities: "Utilities", groceries: "Food / Groceries", transportation: "Transportation",
         insurance: "Insurance", debt: "Debt Payments", healthcare: "Healthcare", other_needs: "Other Needs",
+        electricity: "Electricity", water: "Water", school_fees: "School Fees", phone_internet: "Phone / Internet",
         dining: "Dining Out", entertainment: "Entertainment", shopping: "Shopping", travel: "Travel",
         subscriptions: "Subscriptions", hobbies: "Hobbies", other_wants: "Other Wants",
-        emergency_fund: "Emergency Fund", investment: "Investment", extra_debt: "Extra Debt Payment", other_savings: "Other Savings"
+        emergency_fund: "Emergency Fund", investment: "Investment", extra_debt: "Extra Debt Payment", other_savings: "Other Savings",
+        general_savings: "General Savings",
+        investment_contributions: "Investment Contributions", retirement: "Retirement", real_estate: "Real Estate", stocks_etfs: "Stocks / ETFs",
+        credit_card: "Credit Card", student_loan: "Student Loan", car_loan: "Car Loan", personal_loan: "Personal Loan"
       },
       income_sources: { salary: "Salary", freelance: "Freelance", bonus: "Bonus", gift: "Gift", other_income: "Other" },
       recent_entries: "Recent entries", no_entries: "No entries yet.", delete: "Delete"
@@ -134,6 +164,17 @@ const STRINGS = {
       cta: "Notify me when this is ready", notified: "We'll let you know.",
       connect_bank: "Connect bank / card", connect_moncash: "Connect MonCash"
     },
+    topbar: {
+      greeting: "Hi {name}", change_photo: "Change photo", upload_photo: "Add photo"
+    },
+    transactions: {
+      title: "Transactions", subtitle: "All your income and expenses, like a bank statement.",
+      filter_month: "Month", all_types: "All", income_only: "Income", expense_only: "Expenses",
+      total_income: "Total income", total_expenses: "Total expenses", net: "Net",
+      download_csv: "Download CSV", print_report: "Print monthly report",
+      no_transactions: "No transactions for this month.", date: "Date", description: "Description", category: "Category", type: "Type", amount: "Amount",
+      view_link: "View transactions & report"
+    },
     common: {
       save: "Save", cancel: "Cancel", edit: "Edit", close: "Close", loading: "Loading…",
       required: "Required", usd: "USD", back_to_dashboard: "Back to dashboard"
@@ -143,7 +184,7 @@ const STRINGS = {
   fr: {
     app_name: "Titbits",
     tagline: "Tout voir. Construire l'habitude. Atteindre votre liberté.",
-    nav: { dashboard: "Tableau de bord", add_entry: "Ajouter", emergency_fund: "Fonds d'urgence", investments: "Investissements",
+    nav: { dashboard: "Tableau de bord", add_entry: "Ajouter", transactions: "Transactions", budget: "Budget", emergency_fund: "Fonds d'urgence", investments: "Investissements",
       simulation: "Simulation", profile_tool: "Profil d'investissement", sentiment: "Sentiment du marché", alerts: "Alertes",
       settings: "Paramètres", bank_connect: "Connecter des comptes", logout: "Déconnexion", login: "Connexion", signup: "Inscription" },
     landing: {
@@ -164,7 +205,13 @@ const STRINGS = {
       create_one: "Créer un compte", log_in_link: "Connexion",
       error_mismatch: "Les mots de passe ne correspondent pas.", error_exists: "Un compte avec cet e-mail existe déjà.",
       error_invalid: "E-mail ou mot de passe incorrect.", error_weak: "Utilisez au moins 6 caractères.",
-      demo_note: "Ceci fonctionne entièrement dans votre navigateur — merci de ne pas réutiliser un mot de passe réel."
+      demo_note: "Ceci fonctionne entièrement dans votre navigateur — merci de ne pas réutiliser un mot de passe réel.",
+      first_name: "Prénom", last_name: "Nom", date_of_birth: "Date de naissance", country: "Pays",
+      select_country: "Sélectionnez votre pays",
+      verify_title: "Vérifiez votre e-mail", verify_body: "Cette démo n'a pas de vrai serveur e-mail, nous ne pouvons donc pas vous envoyer un e-mail réel. Voici le code qui aurait été envoyé à {email} :",
+      verify_code_label: "Entrez le code à 6 chiffres", verify_button: "Vérifier l'e-mail", skip_verification: "Ignorer pour l'instant",
+      resend_code: "Renvoyer le code", code_resent: "Nouveau code généré ci-dessous.",
+      error_code_invalid: "Ce code ne correspond pas. Réessayez.", verified_success: "E-mail vérifié !"
     },
     onboarding: {
       title: "Configurons votre situation", step: "Étape",
@@ -186,7 +233,27 @@ const STRINGS = {
       ef_progress: "de l'objectif 6 mois", invest_progress: "de l'objectif mensuel de 15%",
       quick_add: "Ajouter une dépense", quick_add_income: "Ajouter un revenu",
       empty_title: "Aucune donnée", empty_body: "Enregistrez votre premier revenu ou dépense pour voir votre situation se dessiner.",
-      view_all_alerts: "Voir toutes les alertes"
+      view_all_alerts: "Voir toutes les alertes",
+      add_extra_income: "Ajouter un revenu supplémentaire", extra_income_modal_title: "Ajouter un revenu supplémentaire",
+      choose_bucket: "Où doit aller cet argent ? Répartissez-le comme vous voulez.",
+      alloc_needs: "Besoins", alloc_wants: "Envies", alloc_savings: "Épargne", alloc_investment: "Investissement",
+      total_must_equal_100: "Les pourcentages doivent totaliser 100%.", save_allocation: "Ajouter le revenu",
+      cycle_label: "Cycle de réinitialisation", cycle_help: "Besoins/Envies/Épargne et votre suivi d'investissement se réinitialisent automatiquement au début de chaque nouveau cycle.",
+      cycle_option: "Tous les {days} jours"
+    },
+    budget: {
+      title: "Planificateur de budget", subtitle: "Construisez un budget ligne par ligne, puis comparez-le à la réalité.",
+      group_needs: "Besoins", group_wants: "Envies", group_savings: "Épargne", group_investments: "Investissements", group_debts: "Dettes",
+      planned: "Prévu", actual: "Réel", difference: "Différence", total: "Total",
+      add_custom: "+ Ajouter une ligne", custom_line_prompt: "Nommez cette ligne budgétaire", remove: "Supprimer",
+      save: "Enregistrer le budget", saved: "Budget enregistré.",
+      vs_reality_title: "Budget vs réalité (ce cycle)", no_lines: "Aucune ligne dans cette section pour l'instant.",
+      advice_title: "Conseils financiers", advice_group_over: "Vous êtes à {pct}% de votre budget {group} pour ce cycle — à surveiller de près.",
+      advice_line_over: "{label} dépasse le budget de {over}$ ce cycle.", advice_line_under: "{label} est {under}$ en dessous du budget — bien maîtrisé.",
+      advice_no_investment: "Vous avez prévu un budget d'investissement mais n'avez enregistré aucune contribution ce cycle.",
+      advice_high_debt: "Les paiements de dette représentent une grande part de vos dépenses ce cycle — envisagez de prioriser des paiements supplémentaires sur votre dette au taux le plus élevé.",
+      advice_on_track: "Dans l'ensemble, vous êtes à ou en dessous de votre budget total prévu pour ce cycle — continuez ainsi.",
+      advice_none: "Définissez des montants prévus sur quelques lignes pour recevoir des conseils personnalisés."
     },
     entry: {
       title: "Ajouter une entrée", type: "Type", income: "Revenu", expense: "Dépense",
@@ -195,11 +262,15 @@ const STRINGS = {
       save: "Enregistrer", saved: "Enregistré !", pick_category: "Choisir une catégorie",
       cat_needs: "Besoins", cat_wants: "Envies", cat_savings: "Épargne / Dette",
       categories: {
-        rent: "Loyer / Hypothèque", utilities: "Services publics", groceries: "Épicerie", transportation: "Transport",
+        rent: "Loyer / Hypothèque", utilities: "Services publics", groceries: "Alimentation / Épicerie", transportation: "Transport",
         insurance: "Assurance", debt: "Paiements de dette", healthcare: "Santé", other_needs: "Autres besoins",
+        electricity: "Électricité", water: "Eau", school_fees: "Frais de scolarité", phone_internet: "Téléphone / Internet",
         dining: "Restaurants", entertainment: "Divertissement", shopping: "Achats", travel: "Voyage",
         subscriptions: "Abonnements", hobbies: "Loisirs", other_wants: "Autres envies",
-        emergency_fund: "Fonds d'urgence", investment: "Investissement", extra_debt: "Dette supplémentaire", other_savings: "Autre épargne"
+        emergency_fund: "Fonds d'urgence", investment: "Investissement", extra_debt: "Dette supplémentaire", other_savings: "Autre épargne",
+        general_savings: "Épargne générale",
+        investment_contributions: "Contributions d'investissement", retirement: "Retraite", real_estate: "Immobilier", stocks_etfs: "Actions / FNB",
+        credit_card: "Carte de crédit", student_loan: "Prêt étudiant", car_loan: "Prêt auto", personal_loan: "Prêt personnel"
       },
       income_sources: { salary: "Salaire", freelance: "Freelance", bonus: "Prime", gift: "Cadeau", other_income: "Autre" },
       recent_entries: "Entrées récentes", no_entries: "Aucune entrée pour l'instant.", delete: "Supprimer"
@@ -275,6 +346,17 @@ const STRINGS = {
       cta: "Me prévenir quand c'est prêt", notified: "Nous vous préviendrons.",
       connect_bank: "Connecter une banque / carte", connect_moncash: "Connecter MonCash"
     },
+    topbar: {
+      greeting: "Bonjour {name}", change_photo: "Changer la photo", upload_photo: "Ajouter une photo"
+    },
+    transactions: {
+      title: "Transactions", subtitle: "Tous vos revenus et dépenses, comme un relevé bancaire.",
+      filter_month: "Mois", all_types: "Tous", income_only: "Revenus", expense_only: "Dépenses",
+      total_income: "Total des revenus", total_expenses: "Total des dépenses", net: "Net",
+      download_csv: "Télécharger en CSV", print_report: "Imprimer le rapport mensuel",
+      no_transactions: "Aucune transaction ce mois-ci.", date: "Date", description: "Description", category: "Catégorie", type: "Type", amount: "Montant",
+      view_link: "Voir les transactions et le rapport"
+    },
     common: {
       save: "Enregistrer", cancel: "Annuler", edit: "Modifier", close: "Fermer", loading: "Chargement…",
       required: "Requis", usd: "USD", back_to_dashboard: "Retour au tableau de bord"
@@ -284,7 +366,7 @@ const STRINGS = {
   es: {
     app_name: "Titbits",
     tagline: "Véalo todo. Cree el hábito. Alcance su libertad.",
-    nav: { dashboard: "Panel", add_entry: "Añadir", emergency_fund: "Fondo de emergencia", investments: "Inversiones",
+    nav: { dashboard: "Panel", add_entry: "Añadir", transactions: "Transacciones", budget: "Presupuesto", emergency_fund: "Fondo de emergencia", investments: "Inversiones",
       simulation: "Simulación", profile_tool: "Perfil de inversión", sentiment: "Sentimiento del mercado", alerts: "Alertas",
       settings: "Ajustes", bank_connect: "Conectar cuentas", logout: "Cerrar sesión", login: "Iniciar sesión", signup: "Registrarse" },
     landing: {
@@ -305,7 +387,13 @@ const STRINGS = {
       create_one: "Crear una cuenta", log_in_link: "Iniciar sesión",
       error_mismatch: "Las contraseñas no coinciden.", error_exists: "Ya existe una cuenta con ese correo.",
       error_invalid: "Correo o contraseña incorrectos.", error_weak: "Use al menos 6 caracteres.",
-      demo_note: "Esto funciona totalmente en su navegador — no reutilice una contraseña real."
+      demo_note: "Esto funciona totalmente en su navegador — no reutilice una contraseña real.",
+      first_name: "Nombre", last_name: "Apellido", date_of_birth: "Fecha de nacimiento", country: "País",
+      select_country: "Seleccione su país",
+      verify_title: "Verifique su correo", verify_body: "Esta demo no tiene un servidor de correo real, así que no podemos enviarle un correo de verdad. Aquí está el código que se habría enviado a {email}:",
+      verify_code_label: "Ingrese el código de 6 dígitos", verify_button: "Verificar correo", skip_verification: "Omitir por ahora",
+      resend_code: "Reenviar código", code_resent: "Nuevo código generado abajo.",
+      error_code_invalid: "Ese código no coincide. Inténtelo de nuevo.", verified_success: "¡Correo verificado!"
     },
     onboarding: {
       title: "Configuremos su situación", step: "Paso",
@@ -327,7 +415,27 @@ const STRINGS = {
       ef_progress: "del objetivo de 6 meses", invest_progress: "del objetivo mensual del 15%",
       quick_add: "Añadir gasto", quick_add_income: "Añadir ingreso",
       empty_title: "Aún no hay datos", empty_body: "Registre su primer ingreso o gasto para ver su panorama tomar forma.",
-      view_all_alerts: "Ver todas las alertas"
+      view_all_alerts: "Ver todas las alertas",
+      add_extra_income: "Añadir ingreso extra", extra_income_modal_title: "Añadir ingreso extra",
+      choose_bucket: "¿A dónde debe ir este dinero? Repártalo como quiera.",
+      alloc_needs: "Necesidades", alloc_wants: "Deseos", alloc_savings: "Ahorros", alloc_investment: "Inversión",
+      total_must_equal_100: "Los porcentajes deben sumar 100%.", save_allocation: "Añadir ingreso",
+      cycle_label: "Ciclo de reinicio", cycle_help: "Necesidades/Deseos/Ahorros y su seguimiento de inversión se reinician automáticamente al inicio de cada nuevo ciclo.",
+      cycle_option: "Cada {days} días"
+    },
+    budget: {
+      title: "Planificador de presupuesto", subtitle: "Cree un presupuesto línea por línea, luego compárelo con la realidad.",
+      group_needs: "Necesidades", group_wants: "Deseos", group_savings: "Ahorros", group_investments: "Inversiones", group_debts: "Deudas",
+      planned: "Planeado", actual: "Real", difference: "Diferencia", total: "Total",
+      add_custom: "+ Añadir línea", custom_line_prompt: "Nombre esta línea de presupuesto", remove: "Eliminar",
+      save: "Guardar presupuesto", saved: "Presupuesto guardado.",
+      vs_reality_title: "Presupuesto vs. realidad (este ciclo)", no_lines: "Aún no hay líneas en esta sección.",
+      advice_title: "Consejo financiero", advice_group_over: "Está al {pct}% de su presupuesto de {group} para este ciclo — vale la pena revisarlo.",
+      advice_line_over: "{label} excede el presupuesto en ${over} este ciclo.", advice_line_under: "{label} está ${under} por debajo del presupuesto — bien controlado.",
+      advice_no_investment: "Planeó un presupuesto de inversión pero aún no ha registrado ninguna aportación este ciclo.",
+      advice_high_debt: "Los pagos de deuda representan una gran parte de su gasto este ciclo — considere priorizar pagos adicionales hacia su deuda de mayor interés.",
+      advice_on_track: "En general, está en o por debajo de su presupuesto total planeado para este ciclo — siga así.",
+      advice_none: "Defina montos planeados en algunas líneas para empezar a recibir consejos personalizados."
     },
     entry: {
       title: "Añadir entrada", type: "Tipo", income: "Ingreso", expense: "Gasto",
@@ -336,11 +444,15 @@ const STRINGS = {
       save: "Guardar entrada", saved: "¡Guardado!", pick_category: "Elegir una categoría",
       cat_needs: "Necesidades", cat_wants: "Deseos", cat_savings: "Ahorros / Deuda",
       categories: {
-        rent: "Alquiler / Hipoteca", utilities: "Servicios", groceries: "Comestibles", transportation: "Transporte",
+        rent: "Alquiler / Hipoteca", utilities: "Servicios", groceries: "Comida / Comestibles", transportation: "Transporte",
         insurance: "Seguro", debt: "Pagos de deuda", healthcare: "Salud", other_needs: "Otras necesidades",
+        electricity: "Electricidad", water: "Agua", school_fees: "Cuotas escolares", phone_internet: "Teléfono / Internet",
         dining: "Restaurantes", entertainment: "Entretenimiento", shopping: "Compras", travel: "Viajes",
         subscriptions: "Suscripciones", hobbies: "Pasatiempos", other_wants: "Otros deseos",
-        emergency_fund: "Fondo de emergencia", investment: "Inversión", extra_debt: "Pago extra de deuda", other_savings: "Otro ahorro"
+        emergency_fund: "Fondo de emergencia", investment: "Inversión", extra_debt: "Pago extra de deuda", other_savings: "Otro ahorro",
+        general_savings: "Ahorro general",
+        investment_contributions: "Aportaciones de inversión", retirement: "Jubilación", real_estate: "Bienes raíces", stocks_etfs: "Acciones / ETF",
+        credit_card: "Tarjeta de crédito", student_loan: "Préstamo estudiantil", car_loan: "Préstamo de auto", personal_loan: "Préstamo personal"
       },
       income_sources: { salary: "Salario", freelance: "Freelance", bonus: "Bono", gift: "Regalo", other_income: "Otro" },
       recent_entries: "Entradas recientes", no_entries: "Aún no hay entradas.", delete: "Eliminar"
@@ -415,6 +527,17 @@ const STRINGS = {
       manual_note: "La entrada manual sigue totalmente disponible y nunca se elimina — nada cambia aquí en su seguimiento actual.",
       cta: "Notificarme cuando esté listo", notified: "Le avisaremos.",
       connect_bank: "Conectar banco / tarjeta", connect_moncash: "Conectar MonCash"
+    },
+    topbar: {
+      greeting: "Hola {name}", change_photo: "Cambiar foto", upload_photo: "Añadir foto"
+    },
+    transactions: {
+      title: "Transacciones", subtitle: "Todos sus ingresos y gastos, como un estado de cuenta bancario.",
+      filter_month: "Mes", all_types: "Todos", income_only: "Ingresos", expense_only: "Gastos",
+      total_income: "Total de ingresos", total_expenses: "Total de gastos", net: "Neto",
+      download_csv: "Descargar CSV", print_report: "Imprimir informe mensual",
+      no_transactions: "No hay transacciones este mes.", date: "Fecha", description: "Descripción", category: "Categoría", type: "Tipo", amount: "Monto",
+      view_link: "Ver transacciones e informe"
     },
     common: {
       save: "Guardar", cancel: "Cancelar", edit: "Editar", close: "Cerrar", loading: "Cargando…",

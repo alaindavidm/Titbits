@@ -14,6 +14,10 @@ function randomSalt() {
   return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+function generateVerificationCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
 export function getSession() {
   return localStorage.getItem(SESSION_KEY);
 }
@@ -28,7 +32,7 @@ export function isAuthenticated() {
   return !!getCurrentUser();
 }
 
-export async function signup(email, password) {
+export async function signup({ email, password, firstName, lastName, dateOfBirth, country }) {
   email = email.trim().toLowerCase();
   const existing = db.where("users", (u) => u.email === email);
   if (existing.length) throw new Error("EMAIL_EXISTS");
@@ -38,14 +42,34 @@ export async function signup(email, password) {
     email,
     password_hash,
     salt,
+    first_name: firstName,
+    last_name: lastName,
+    date_of_birth: dateOfBirth,
+    country,
+    profile_picture: null,
     onboarded: false,
     currency: "USD",
     salary: 0,
     pay_frequency: "monthly",
+    cycle_length_days: 30,
+    email_verified: false,
+    email_verification_code: generateVerificationCode(),
     notification_preferences: { channel_inapp: true, channel_email: false, channel_push: false }
   });
   localStorage.setItem(SESSION_KEY, user.id);
   return user;
+}
+
+export function resendVerificationCode(userId) {
+  const code = generateVerificationCode();
+  return db.update("users", userId, { email_verification_code: code });
+}
+
+export function verifyEmailCode(userId, code) {
+  const user = db.find("users", userId);
+  if (!user) throw new Error("NOT_FOUND");
+  if (String(code).trim() !== String(user.email_verification_code)) throw new Error("INVALID_CODE");
+  return db.update("users", userId, { email_verified: true, email_verification_code: null });
 }
 
 export async function login(email, password) {

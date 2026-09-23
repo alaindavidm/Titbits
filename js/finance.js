@@ -19,6 +19,8 @@ export const INCOME_SOURCES = ["salary", "freelance", "bonus", "gift", "other_in
 
 export const BUDGET_TARGETS = { needs: 0.5, wants: 0.3, savings: 0.2 };
 
+export const ALLOCATION_BUCKETS = ["needs", "wants", "savings", "investment"];
+
 export function todayLocal() {
   const d = new Date();
   const offset = d.getTimezoneOffset();
@@ -39,20 +41,127 @@ export function dayOfMonth(date) {
   return new Date(date).getDate();
 }
 
-export function monthlyIncomeTotal(userId, key = monthKey(new Date())) {
+// --- Fixed-length reset cycle (§8) --------------------------------------
+// Each user picks a cycle length (15 or 30 days), anchored to the date they
+// joined. Needs/Wants/Savings and the investment contribution tracker are
+// always scoped to "the current period" as defined by this cycle, so they
+// reset automatically once the period rolls over — no stored running
+// totals to reset by hand.
+
+const MS_PER_DAY = 86400000;
+
+export function getCycleLengthDays(user) {
+  return Number(user?.cycle_length_days) === 15 ? 15 : 30;
+}
+
+function startOfDay(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+export function periodStartFor(user, refDate) {
+  const lengthDays = getCycleLengthDays(user);
+  const anchor = startOfDay(user.created_at || refDate);
+  const ref = startOfDay(refDate);
+  const daysSinceAnchor = Math.floor((ref - anchor) / MS_PER_DAY);
+  const periodIndex = Math.floor(daysSinceAnchor / lengthDays);
+  return new Date(anchor.getTime() + periodIndex * lengthDays * MS_PER_DAY);
+}
+
+export function periodEndFor(user, periodStart) {
+  return new Date(periodStart.getTime() + getCycleLengthDays(user) * MS_PER_DAY);
+}
+
+export function periodKeyForDate(user, date) {
+  return periodStartFor(user, date).toISOString().slice(0, 10);
+}
+
+export function currentPeriodKey(user) {
+  return periodKeyForDate(user, new Date());
+}
+
+export function periodProgress(user, refDate = new Date()) {
+  const daysTotal = getCycleLengthDays(user);
+  const start = periodStartFor(user, refDate);
+  const dayIndex = Math.round((startOfDay(refDate) - start) / MS_PER_DAY) + 1;
+  const fractionElapsed = Math.min(1, dayIndex / daysTotal);
+  const fractionRemaining = 1 - fractionElapsed;
+  const daysLeft = Math.max(0, daysTotal - dayIndex);
+  return { start, end: periodEndFor(user, start), daysTotal, dayIndex, fractionElapsed, fractionRemaining, daysLeft };
+}
+
+export function monthlyIncomeTotal(user, periodKey = currentPeriodKey(user)) {
   return db
-    .where("incomeEntries", (e) => e.user_id === userId && monthKey(e.date) === key)
+    .where("incomeEntries", (e) => e.user_id === user.id && periodKeyForDate(user, e.date) === periodKey)
     .reduce((sum, e) => sum + Number(e.amount), 0);
 }
 
-export function monthlyExpensesByBucket(userId, key = monthKey(new Date())) {
-  const entries = db.where("expenseEntries", (e) => e.user_id === userId && monthKey(e.date) === key);
+export function monthlyExpensesByBucket(user, periodKey = currentPeriodKey(user)) {
+  const entries = db.where(
+    "expenseEntries",
+    (e) => e.user_id === user.id && periodKeyForDate(user, e.date) === periodKey
+  );
   const totals = { needs: 0, wants: 0, savings: 0 };
   for (const e of entries) {
     const bucket = e.budget_bucket || CATEGORY_BUCKETS[e.category] || "needs";
     totals[bucket] += Number(e.amount);
   }
   return totals;
+}
+
+// Extra income (§3) is never auto-split 50/30/20. Instead the user assigns
+// it to one or more buckets themselves; the "investment" share becomes an
+// immediate investment contribution (see addExtraIncome), and the
+// needs/wants/savings shares simply widen that bucket's allowance for the
+// current period, since it's money earmarked to be used there.
+export function extraIncomeAllowanceBoost(user, periodKey = currentPeriodKey(user)) {
+  const entries = db.where(
+    "incomeEntries",
+    (e) => e.user_id === user.id && e.is_extra && e.allocation && periodKeyForDate(user, e.date) === periodKey
+  );
+  const boost = { needs: 0, wants: 0, savings: 0 };
+  for (const e of entries) {
+    for (const bucket of ["needs", "wants", "savings"]) {
+      const pct = Number(e.allocation[bucket] || 0);
+      if (pct > 0) boost[bucket] += (Number(e.amount) * pct) / 100;
+    }
+  }
+  return boost;
+}
+
+export function addExtraIncome(user, amount, date, allocation) {
+  const entry = db.insert("incomeEntries", {
+    user_id: user.id,
+    amount: Number(amount),
+    date,
+    source: "other_income",
+    is_recurring: false,
+    is_extra: true,
+    allocation
+  });
+  const investPct = Number(allocation.investment || 0);
+  if (investPct > 0) {
+    db.insert("investmentContributions", {
+      user_id: user.id,
+      amount: (Number(amount) * investPct) / 100,
+      date,
+      target_percentage: null,
+      against_salary_amount: null,
+      note: "extra_income"
+    });
+  }
+  return entry;
+}
+
+export function budgetAllowances(user, periodKey = currentPeriodKey(user)) {
+  const salary = Number(user.salary || 0);
+  const boost = extraIncomeAllowanceBoost(user, periodKey);
+  return {
+    needs: salary * BUDGET_TARGETS.needs + boost.needs,
+    wants: salary * BUDGET_TARGETS.wants + boost.wants,
+    savings: salary * BUDGET_TARGETS.savings + boost.savings
+  };
 }
 
 export function averageMonthlyExpenses(userId, monthsBack = 6) {
@@ -109,9 +218,12 @@ export function portfolioSummary(userId) {
   return { totalValue, totalCost, gainLoss: totalValue - totalCost, byType, count: holdings.length };
 }
 
-export function monthlyInvestmentContributions(userId, key = monthKey(new Date())) {
+export function monthlyInvestmentContributions(user, periodKey = currentPeriodKey(user)) {
   return db
-    .where("investmentContributions", (c) => c.user_id === userId && monthKey(c.date) === key)
+    .where(
+      "investmentContributions",
+      (c) => c.user_id === user.id && periodKeyForDate(user, c.date) === periodKey
+    )
     .reduce((sum, c) => sum + Number(c.amount), 0);
 }
 
@@ -146,19 +258,17 @@ function createAlert(userId, type, message, suggested_action, period) {
 
 export function recomputeAlerts(user) {
   const userId = user.id;
-  const now = new Date();
-  const period = monthKey(now);
-  const daysTotal = daysInMonth(now);
-  const dayNow = dayOfMonth(now);
-  const fractionElapsed = dayNow / daysTotal;
-  const fractionRemaining = 1 - fractionElapsed;
+  const period = currentPeriodKey(user);
+  const progress = periodProgress(user);
+  const fractionRemaining = progress.fractionRemaining;
 
-  const income = monthlyIncomeTotal(userId, period) || Number(user.salary || 0);
-  const spent = monthlyExpensesByBucket(userId, period);
+  const income = Number(user.salary || 0);
+  const allowances = budgetAllowances(user, period);
+  const spent = monthlyExpensesByBucket(user, period);
   const oneOffTotalsByBucket = { needs: 0, wants: 0, savings: 0 };
   const oneOffEntries = db.where(
     "expenseEntries",
-    (e) => e.user_id === userId && monthKey(e.date) === period && e.is_one_off_flag
+    (e) => e.user_id === userId && periodKeyForDate(user, e.date) === period && e.is_one_off_flag
   );
   for (const e of oneOffEntries) {
     const bucket = e.budget_bucket || CATEGORY_BUCKETS[e.category] || "needs";
@@ -167,7 +277,7 @@ export function recomputeAlerts(user) {
 
   if (income > 0) {
     for (const bucket of ["needs", "wants", "savings"]) {
-      const allowance = income * BUDGET_TARGETS[bucket];
+      const allowance = allowances[bucket];
       const countedSpend = spent[bucket] - oneOffTotalsByBucket[bucket];
       if (allowance > 0 && countedSpend / allowance >= 0.8 && fractionRemaining > 0.25) {
         createAlert(
@@ -184,17 +294,17 @@ export function recomputeAlerts(user) {
   const ef = getEmergencyFund(userId);
   const target = emergencyFundTarget(ef);
   if (target > 0 && Number(ef.current_balance) < target) {
-    const monthTx = db.where(
+    const periodTx = db.where(
       "emergencyFundTransactions",
-      (tx) => tx.emergency_fund_id === ef.id && monthKey(tx.date) === period && tx.type === "contribution"
+      (tx) => tx.emergency_fund_id === ef.id && periodKeyForDate(user, tx.date) === period && tx.type === "contribution"
     );
-    if (!monthTx.length && dayNow >= Math.floor(daysTotal * 0.66)) {
+    if (!periodTx.length && progress.dayIndex >= Math.floor(progress.daysTotal * 0.66)) {
       createAlert(userId, "ef", "ef_trajectory", null, period);
     }
   }
 
   const invTarget = investmentTargetForMonth(user);
-  const contributed = monthlyInvestmentContributions(userId, period);
+  const contributed = monthlyInvestmentContributions(user, period);
   if (invTarget > 0 && contributed < invTarget && fractionRemaining < 0.35 && fractionRemaining > 0) {
     createAlert(userId, "invest", "invest_at_risk", null, period);
   }

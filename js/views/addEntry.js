@@ -1,7 +1,7 @@
 import { t } from "../i18n.js";
 import { db } from "../db.js";
-import { CATEGORIES_BY_BUCKET, CATEGORY_BUCKETS, INCOME_SOURCES, todayLocal } from "../finance.js";
-import { navigate } from "../router.js";
+import { INCOME_SOURCES, todayLocal } from "../finance.js";
+import { BUDGET_GROUPS, getBudgetLines, budgetLineLabel, legacyBucketForCategory, categoryDisplayLabel } from "../budget.js";
 
 export async function render(root, user) {
   let type = "expense";
@@ -26,6 +26,7 @@ export async function render(root, user) {
           <form id="entry-form">${type === "expense" ? expenseFields() : incomeFields()}
             <button class="btn btn-primary btn-block" type="submit">${t("entry.save")}</button>
           </form>
+          <a href="#/dashboard" class="btn btn-ghost btn-block" style="margin-top:10px">${t("common.back_to_dashboard")}</a>
         </div>
 
         <div class="card" style="margin-top:20px">
@@ -59,7 +60,7 @@ export async function render(root, user) {
           note: fd.get("note") || null,
           is_recurring: fd.get("recurring") === "on",
           is_one_off_flag: fd.get("one_off") === "on",
-          budget_bucket: CATEGORY_BUCKETS[category] || "needs"
+          budget_bucket: legacyBucketForCategory(user, category)
         });
       } else {
         db.insert("incomeEntries", {
@@ -85,6 +86,7 @@ export async function render(root, user) {
 
   function expenseFields() {
     const today = todayLocal();
+    const lines = getBudgetLines(user);
     return `
       <label>${t("entry.amount")}</label>
       <input type="number" step="0.01" min="0.01" name="amount" required />
@@ -92,15 +94,13 @@ export async function render(root, user) {
       <input type="date" name="date" value="${today}" required />
       <label>${t("entry.category")}</label>
       <select name="category" required>
-        <optgroup label="${t("entry.cat_needs")}">
-          ${CATEGORIES_BY_BUCKET.needs.map((c) => `<option value="${c}">${t(`entry.categories.${c}`)}</option>`).join("")}
-        </optgroup>
-        <optgroup label="${t("entry.cat_wants")}">
-          ${CATEGORIES_BY_BUCKET.wants.map((c) => `<option value="${c}">${t(`entry.categories.${c}`)}</option>`).join("")}
-        </optgroup>
-        <optgroup label="${t("entry.cat_savings")}">
-          ${CATEGORIES_BY_BUCKET.savings.map((c) => `<option value="${c}">${t(`entry.categories.${c}`)}</option>`).join("")}
-        </optgroup>
+        ${BUDGET_GROUPS.map((group) => {
+          const groupLines = lines.filter((l) => l.group === group).sort((a, b) => budgetLineLabel(a).localeCompare(budgetLineLabel(b)));
+          if (!groupLines.length) return "";
+          return `<optgroup label="${t(`budget.group_${group}`)}">
+            ${groupLines.map((l) => `<option value="${l.key}">${budgetLineLabel(l)}</option>`).join("")}
+          </optgroup>`;
+        }).join("")}
       </select>
       <label>${t("entry.note")}</label>
       <input type="text" name="note" />
@@ -129,7 +129,7 @@ export async function render(root, user) {
       ${entries
         .map((e) => {
           const isIncome = e._kind === "income";
-          const label = isIncome ? t(`entry.income_sources.${e.source}`) : t(`entry.categories.${e.category}`);
+          const label = isIncome ? t(`entry.income_sources.${e.source}`) : categoryDisplayLabel(user, e.category);
           return `
         <li class="entry-row">
           <div class="entry-main">

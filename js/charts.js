@@ -12,16 +12,18 @@ export function progressBar(pct, colorVar, height = 14) {
 
 export function budgetBars(rows) {
   return rows
-    .map(
-      (r) => `
+    .map((r) => {
+      const exceeded = r.spent > r.allowance;
+      const pct = (r.spent / (r.allowance || 1)) * 100;
+      return `
     <div class="budget-row">
       <div class="budget-row-head">
         <span class="budget-label">${esc(r.label)}</span>
-        <span class="budget-figures">$${r.spent.toFixed(0)} ${esc(r.of)} $${r.allowance.toFixed(0)} ${esc(r.target)}</span>
+        <span class="budget-figures ${exceeded ? "over-budget" : ""}">$${r.spent.toFixed(0)} ${esc(r.of)} $${r.allowance.toFixed(0)} ${esc(r.target)}</span>
       </div>
-      ${progressBar((r.spent / (r.allowance || 1)) * 100, r.spent > r.allowance ? "--color-warn" : r.colorVar)}
-    </div>`
-    )
+      ${progressBar(pct, exceeded ? "--danger" : "--purple-500")}
+    </div>`;
+    })
     .join("");
 }
 

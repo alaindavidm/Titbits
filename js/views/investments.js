@@ -13,7 +13,7 @@ export async function render(root, user) {
       .where("investmentContributions", (c) => c.user_id === user.id)
       .sort((a, b) => new Date(b.date) - new Date(a.date));
     const target = investmentTargetForMonth(user);
-    const contributedThisMonth = monthlyInvestmentContributions(user.id);
+    const contributedThisMonth = monthlyInvestmentContributions(user);
     const adherence = target > 0 ? Math.min(100, (contributedThisMonth / target) * 100) : 0;
 
     const segments = Object.entries(summary.byType).map(([type, value]) => ({
